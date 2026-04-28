@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMIT Dynamic Prep: Chapters 1-20</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.4s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        #quiz-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 550px;
+            width: 90%;
+            text-align: center;
+        }
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .wrong-selection { background-color: #ffdde0 !important; border-color: #ff5c5c !important; }
+        .correct-selection { background-color: #d4edda !important; border-color: #28a745 !important; font-weight: bold; }
+
+        #next-btn {
+            margin-top: 20px;
+            padding: 12px 40px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+        }
+        #result-screen { display: none; text-align: left; }
+        .summary-card { padding: 10px; border-bottom: 1px solid #eee; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div id="question-screen">
+        <h3 id="progress">Question 1/30</h3>
+        <p id="question-text" style="font-size: 19px; min-height: 50px;"></p>
+        <div id="options-container"></div>
+        <button id="next-btn" onclick="loadNextQuestion()">Next Question →</button>
+    </div>
+
+    <div id="result-screen">
+        <h2>Quiz Results</h2>
+        <p id="final-stats" style="font-weight: bold;"></p>
+        <div id="summary-report" style="max-height: 350px; overflow-y: auto; background: #fafafa; padding: 10px;"></div>
+        <button onclick="location.reload()" style="width:100%; margin-top:20px; padding:15px; cursor:pointer; background:#333; color:white; border-radius:8px;">Restart with New Questions</button>
+    </div>
+</div>
+
+<script>
+    const questionPool = [
+        { q: "What is the correct syntax for an alert?", options: ["alert 'Hello';", "alert('Hello');", "msg('Hello');", "display('Hello');"], a: "alert('Hello');" },
+        { q: "Which symbol is used for comments in JS?", options: ["//", "/* */", "", "Both A and B"], a: "Both A and B" },
+        { q: "Variable names CANNOT start with:", options: ["Letters", "$", "_", "Numbers"], a: "Numbers" },
+        { q: "What is result of: var x = 5 + '5';", options: ["10", "55", "5", "Error"], a: "55" },
+        { q: "Which operator checks value AND type?", options: ["==", "=", "===", "!=="], a: "===" },
+        { q: "How to add a value to the start of an array?", options: ["push()", "unshift()", "shift()", "pop()"], a: "unshift()" },
+        { q: "What is the 7th chapter of the book?", options: ["Math Expressions", "If Statements", "Prompts", "Arrays"], a: "Math Expressions" },
+        { q: "Index of the 3rd element in an array?", options: ["3", "2", "1", "0"], a: "2" },
+        { q: "Result of: 20 % 6", options: ["3", "2", "1", "4"], a: "2" },
+        { q: "How to find the length of a string?", options: [".length", ".size", ".count", ".total"], a: ".length" },
+        { q: "Which is a 'Not Equal' operator?", options: ["!=", "==", "!", "="], a: "!=" },
+        { q: "Logical AND is written as:", options: ["&", "AND", "&&", "||"], a: "&&" },
+        { q: "Keyword to declare a constant (not in book, but common)?", options: ["var", "let", "const", "fixed"], a: "const" },
+        { q: "How to stop a loop?", options: ["break", "stop", "exit", "halt"], a: "break" },
+        { q: "The 'if' statement uses what brackets for condition?", options: ["[]", "{}", "()", "<>"], a: "()" },
+        { q: "What does 'pop()' do?", options: ["Adds to end", "Removes from end", "Adds to start", "Removes from start"], a: "Removes from end" },
+        { q: "What does 'shift()' do?", options: ["Adds to start", "Removes from start", "Removes from end", "Sorts"], a: "Removes from start" },
+        { q: "Correct for loop start?", options: ["for(i=0; i<5)", "for(var i=0; i<5; i++)", "for i to 5", "loop(i < 5)"], a: "for(var i=0; i<5; i++)" },
+        { q: "What is an array?", options: ["A single variable", "A collection of values", "A math function", "A popup box"], a: "A collection of values" },
+        { q: "What is camelCase?", options: ["first_last", "FirstLast", "firstLast", "FIRSTLAST"], a: "firstLast" },
+        { q: "Result of: var n = 1; n++;", options: ["1", "2", "0", "undefined"], a: "2" },
+        { q: "Can a variable name be 'var'?", options: ["Yes", "No", "Only in alerts", "Only in loops"], a: "No" },
+        { q: "Which is used for user input?", options: ["alert()", "prompt()", "confirm()", "input()"], a: "prompt()" },
+        { q: "What is a nested if?", options: ["If inside a loop", "If inside another If", "If with no Else", "Two Ifs side by side"], a: "If inside another If" },
+        { q: "Array method to remove elements from middle?", options: ["slice", "splice", "split", "remove"], a: "splice" },
+        { q: "Result of: 10 / 2 * 5?", options: ["1", "25", "4", "10"], a: "25" },
+        { q: "Is 'Rose' the same as 'rose' in JS?", options: ["Yes", "No", "Sometimes", "Only in strings"], a: "No" },
+        { q: "What are familiar math operators?", options: ["+, -, *, /", "%, ++, --", "Both", "None"], a: "+, -, *, /" },
+        { q: "String concatenation uses which symbol?", options: ["&", "+", ",", "."], a: "+" },
+        { q: "How to write an empty array?", options: ["var a = [];", "var a = {};", "var a = '';", "var a = null;"], a: "var a = [];" },
+        { q: "If 'var x = 10;', what is 'x === 10'?", options: ["true", "false", "Error", "undefined"], a: "true" },
+        { q: "How many choices can a prompt have?", options: ["One input field", "Two buttons (OK/Cancel)", "Both", "Multiple radio buttons"], a: "Both" }
+    ];
+
+    let currentQuestions = [];
+    let currentIdx = 0;
+    let score = 0;
+    let attempts = 0;
+    let report = [];
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initQuiz() {
+        let shuffledPool = shuffleArray([...questionPool]);
+        currentQuestions = shuffledPool.slice(0, 30);
+        currentIdx = 0;
+        score = 0;
+        report = [];
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        attempts = 0;
+        document.body.style.backgroundColor = "#f0f2f5";
+        document.getElementById("next-btn").style.display = "none";
+        document.getElementById("options-container").innerHTML = "";
+        
+        let qData = currentQuestions[currentIdx];
+        document.getElementById("progress").innerText = `Question ${currentIdx + 1}/30`;
+        document.getElementById("question-text").innerText = qData.q;
+
+        let shuffledOptions = shuffleArray([...qData.options]);
+
+        shuffledOptions.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.innerText = opt;
+            btn.classList.add("option-btn");
+            btn.onclick = (e) => handleSelection(opt, e.target);
+            document.getElementById("options-container").appendChild(btn);
+        });
+    }
+
+    function handleSelection(selectedText, btnElement) {
+        const correctText = currentQuestions[currentIdx].a;
+        
+        if (selectedText === correctText) {
+            btnElement.classList.add("correct-selection");
+            document.body.style.backgroundColor = "#d4edda";
+            
+            const allBtns = document.querySelectorAll(".option-btn");
+            allBtns.forEach(b => b.disabled = true);
+
+            if (attempts === 0) score++;
+            report.push({ q: currentQuestions[currentIdx].q, tries: attempts + 1 });
+
+            document.getElementById("next-btn").style.display = "inline-block";
+        } else {
+            if (!btnElement.classList.contains("wrong-selection")) {
+                attempts++;
+                btnElement.classList.add("wrong-selection");
+                document.body.style.backgroundColor = "#f8d7da";
+            }
+        }
+    }
+
+    function loadNextQuestion() {
+        currentIdx++;
+        if (currentIdx < 30) {
+            loadQuestion();
+        } else {
+            showSummary();
+        }
+    }
+
+    function showSummary() {
+        document.getElementById("question-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+        document.body.style.backgroundColor = "#f0f2f5";
+
+        document.getElementById("final-stats").innerText = `Final Score: ${score} / 30 (First Tries)`;
+        
+        const reportDiv = document.getElementById("summary-report");
+        reportDiv.innerHTML = "";
+        report.forEach((item, i) => {
+            const color = item.tries === 1 ? "green" : "orange";
+            reportDiv.innerHTML += `
+                <div class="summary-card">
+                    <strong>${i+1}. ${item.q}</strong><br>
+                    <span style="color:${color}">Tries: ${item.tries}</span>
+                </div>`;
+        });
+    }
+
+    initQuiz();
+</script>
+
+</body>
+</html>
