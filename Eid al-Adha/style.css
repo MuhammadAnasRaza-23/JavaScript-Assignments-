@@ -1,0 +1,26 @@
+body {
+    background-color: #fff9f0; 
+    color: #8d6e63;           
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+.timer-container {
+    text-align: center;
+    padding: 20px;
+}
+h1 {
+    font-weight: 300;
+    font-size: 1.5rem;
+    color: #d87d4a; 
+    margin-bottom: 10px;
+}
+
+#countdown-display {
+    font-size: 3rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
